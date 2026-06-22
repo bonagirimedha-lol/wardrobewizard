@@ -1,0 +1,29 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+ENV/
+
+# Local databases
+database/wardrobewizard.db
+*.db
+
+# User uploads (keep directory but ignore files)
+frontend/uploads/*
+!frontend/uploads/.gitkeep
+
+# Local ML model weights
+ml/wardrobe_model.pth
+ml/*.pth
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Credentials
+.env

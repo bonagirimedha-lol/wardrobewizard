@@ -1,0 +1,17 @@
+{
+  "name": "WardrobeWizard",
+  "short_name": "WardrobeWizard",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090a0f",
+  "theme_color": "#8b5cf6",
+  "description": "AI-powered personal stylist and closet manager.",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3159/3159614.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

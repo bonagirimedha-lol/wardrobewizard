@@ -1,0 +1,791 @@
+<!-- frontend/index.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WardrobeWizard - AI Stylist</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="manifest" href="/manifest.json" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary-gradient: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+        --secondary-gradient: linear-gradient(135deg, #06b6d4, #3b82f6);
+        --bg-dark: #090a0f;
+        --card-bg: rgba(20, 21, 33, 0.6);
+        --card-border: rgba(255, 255, 255, 0.08);
+        --text-main: #f3f4f6;
+        --text-muted: #9ca3af;
+      }
+      body {
+        font-family: 'Outfit', 'Segoe UI', system-ui, -apple-system, sans-serif;
+        background-color: var(--bg-dark);
+        background-image: 
+          radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+          radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.12) 0px, transparent 50%);
+        color: var(--text-main);
+        min-height: 100vh;
+      }
+      .navbar {
+        background: rgba(15, 17, 28, 0.85) !important;
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--card-border);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+      }
+      .navbar-brand {
+        font-size: 1.4rem;
+        background: linear-gradient(to right, #a78bfa, #818cf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.5px;
+      }
+      .closet-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 24px;
+        padding: 20px 0;
+      }
+      .clothing-item {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        overflow: hidden;
+        backdrop-filter: blur(8px);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+      }
+      .clothing-item::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        border-radius: 16px;
+        padding: 1.5px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent, rgba(255,255,255,0.05));
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+      }
+      .clothing-item:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(139, 92, 246, 0.2);
+        border-color: rgba(139, 92, 246, 0.4);
+      }
+      .clothing-item img {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+        transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .clothing-item:hover img {
+        transform: scale(1.05);
+      }
+      .item-info {
+        padding: 16px;
+        background: rgba(10, 11, 18, 0.6);
+      }
+      .item-info h6 {
+        font-weight: 600;
+        margin-bottom: 6px;
+        letter-spacing: -0.2px;
+      }
+      .color-dot {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 6px;
+        border: 1.5px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 0 8px rgba(0,0,0,0.5);
+      }
+      .color-dot.sm {
+        width: 12px;
+        height: 12px;
+      }
+      .outfit-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 24px;
+        margin-bottom: 20px;
+        backdrop-filter: blur(12px);
+        transition: border-color 0.3s;
+      }
+      .outfit-card:hover {
+        border-color: rgba(99, 102, 241, 0.3);
+      }
+      .weather-widget {
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%);
+        border: 1px solid rgba(6, 182, 212, 0.2);
+        color: var(--text-main);
+        padding: 30px;
+        border-radius: 24px;
+        margin-bottom: 28px;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s;
+      }
+      .weather-widget:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 35px rgba(6, 182, 212, 0.15);
+      }
+      .upload-area {
+        border: 2px dashed rgba(255, 255, 255, 0.25);
+        border-radius: 20px;
+        padding: 50px 30px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .upload-area:hover {
+        border-color: #8b5cf6;
+        background: rgba(139, 92, 246, 0.08);
+        box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
+      }
+      .nav-tabs {
+        border-bottom: 1px solid var(--card-border);
+      }
+      .nav-tabs .nav-link {
+        border: none;
+        color: var(--text-muted);
+        font-weight: 600;
+        padding: 14px 28px;
+        background: transparent;
+        transition: all 0.3s;
+      }
+      .nav-tabs .nav-link:hover {
+        color: var(--text-main);
+      }
+      .nav-tabs .nav-link.active {
+        color: #a78bfa;
+        border-bottom: 3px solid #8b5cf6;
+        background: transparent;
+      }
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        backdrop-filter: blur(12px);
+      }
+      .form-select, .form-control {
+        background-color: rgba(15, 17, 28, 0.8) !important;
+        border: 1px solid var(--card-border) !important;
+        color: var(--text-main) !important;
+        border-radius: 12px;
+      }
+      .form-select:focus, .form-control:focus {
+        border-color: #8b5cf6 !important;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25) !important;
+      }
+      .btn-primary {
+        background: var(--primary-gradient) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 10px 24px;
+        font-weight: 600;
+        box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);
+        transition: all 0.3s !important;
+      }
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+      }
+      .btn-light {
+        background: rgba(255, 255, 255, 0.9) !important;
+        color: #0f111c !important;
+        border-radius: 12px !important;
+        font-weight: 600;
+        transition: all 0.3s !important;
+      }
+      .btn-light:hover {
+        transform: translateY(-2px);
+        background: #ffffff !important;
+        box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
+      }
+      .modal-content {
+        background: #0f111c !important;
+        border: 1px solid var(--card-border) !important;
+        border-radius: 24px !important;
+        color: var(--text-main);
+      }
+      .modal-header {
+        border-bottom: 1px solid var(--card-border);
+      }
+      .modal-footer {
+        border-top: 1px solid var(--card-border);
+      }
+      /* Custom animated glows */
+      .bg-soft-primary {
+        background: rgba(139, 92, 246, 0.15) !important;
+      }
+      #loadingOverlay {
+        background: rgba(9, 10, 15, 0.85) !important;
+        backdrop-filter: blur(8px);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+      <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="#">
+          <i class="fas fa-magic me-2"></i>
+          <strong>WardrobeWizard</strong>
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto align-items-center">
+            <li class="nav-item">
+              <a class="nav-link active" href="#" data-tab="closet-tab">My Closet</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" data-tab="outfit-tab">Today's Outfit</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" data-tab="analytics-tab">Analytics</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" data-tab="ml-tab">ML Dashboard</a>
+            </li>
+            <li class="nav-item ms-lg-3" id="authNavArea">
+              <button class="btn btn-outline-light btn-sm px-3 rounded-pill" onclick="showAuthModal()">
+                <i class="fas fa-sign-in-alt me-1"></i> Sign In
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container mt-4">
+      <!-- Weather Widget -->
+      <div class="weather-widget" id="weatherWidget">
+        <div class="row align-items-center">
+          <div class="col-md-6">
+            <h2 class="display-4">
+              <i class="fas fa-cloud-sun shadow-sm"></i>
+              <span id="weatherTemp">--</span>°C
+            </h2>
+            <p class="lead" id="weatherDesc">Fetching current weather...</p>
+          </div>
+          <div class="col-md-6 text-end">
+            <button
+              class="btn btn-light btn-lg px-4"
+              onclick="generateOutfit()"
+            >
+              <i class="fas fa-sparkles me-2 text-primary"></i> Get Styling
+              Advice
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content Tabs -->
+      <ul class="nav nav-tabs mb-4" id="mainTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link active"
+            id="closet-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#closet"
+            type="button"
+          >
+            <i class="fas fa-tshirt me-2"></i> Closet
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="outfit-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#outfit"
+            type="button"
+          >
+            <i class="fas fa-magic me-2"></i> Styling
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="analytics-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#analytics"
+            type="button"
+          >
+            <i class="fas fa-chart-line me-2"></i> Insights
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="ml-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#mldashboard"
+            type="button"
+          >
+            <i class="fas fa-brain me-2"></i> ML Dashboard
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content">
+        <!-- Closet Tab -->
+        <div class="tab-pane fade show active" id="closet" role="tabpanel">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="card mb-4">
+                <div class="card-body p-0">
+                  <div class="upload-area">
+                    <i class="fas fa-camera fa-3x mb-3 text-muted"></i>
+                    <h4>Add to Closet</h4>
+                    <p class="text-muted mb-3">Snap a photo or upload an image file</p>
+                    <div class="d-flex justify-content-center gap-2">
+                      <button class="btn btn-primary btn-sm rounded-pill px-3" onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-file-upload me-1"></i> Upload File
+                      </button>
+                      <button class="btn btn-outline-light btn-sm rounded-pill px-3" onclick="openWebcamModal()">
+                        <i class="fas fa-video me-1"></i> Take Photo
+                      </button>
+                    </div>
+                    <input
+                      type="file"
+                      id="fileInput"
+                      accept="image/*"
+                      capture="environment"
+                      style="display: none"
+                      onchange="handleImageUpload(this)"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-body">
+                  <h5>Quick Filters</h5>
+                  <div class="d-flex flex-wrap gap-2 mt-3">
+                    <button class="btn btn-sm btn-outline-secondary">
+                      Tops
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary">
+                      Bottoms
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary">
+                      Shoes
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary">
+                      Winter
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary">
+                      Summer
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-8">
+              <div class="closet-grid" id="closetGrid">
+                <!-- Items placeholder -->
+                <div class="text-center py-5">
+                  <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                  <p class="mt-2 text-muted">Loading your wardrobe...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Outfit Tab -->
+        <div class="tab-pane fade" id="outfit" role="tabpanel">
+          <div class="row">
+            <div class="col-md-8">
+              <!-- Dynamic Aesthetic Tabs Container -->
+              <div id="aestheticTabsContainer"></div>
+              
+              <div id="outfitDisplay">
+                <div class="text-center py-5">
+                  <h3>Ready for a new look?</h3>
+                  <p>Select an occasion and click "Generate New Outfit"</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card">
+                <div class="card-body">
+                  <h5>Occasion</h5>
+                  <select
+                    class="form-select form-select-lg mb-3"
+                    id="occasionSelect"
+                  >
+                    <option value="casual">Casual Day Out</option>
+                    <option value="formal">Formal Event</option>
+                    <option value="date">Date Night</option>
+                    <option value="interview">Job Interview</option>
+                    <option value="workout">Workout Session</option>
+                  </select>
+
+                  <h5>Vibe / Aesthetic</h5>
+                  <select
+                    class="form-select form-select-lg mb-4"
+                    id="aestheticSelect"
+                  >
+                    <option value="All">🔮 All Aesthetics (Auto)</option>
+                    <option value="Clean Girl">🤍 Clean Girl</option>
+                    <option value="Y2K">💿 Y2K (Year 2000)</option>
+                    <option value="Quiet Luxury / Old Money">💼 Quiet Luxury / Old Money</option>
+                    <option value="Coquette Core">🎀 Coquette Core</option>
+                    <option value="Cottagecore">🌾 Cottagecore</option>
+                    <option value="Neo Deco / Retro Glam">geometry Neo Deco / Retro Glam</option>
+                    <option value="Dark Academia">📚 Dark Academia</option>
+                    <option value="Coastal Cowgirl">🤠 Coastal Cowgirl</option>
+                    <option value="Gummy / Jelly Aesthetic">🍭 Gummy / Jelly Aesthetic</option>
+                    <option value="Indie Sleaze / Grunge Revival">🎸 Indie Sleaze / Grunge Revival</option>
+                  </select>
+
+                  <button
+                    class="btn btn-primary btn-lg w-100"
+                    onclick="generateOutfit()"
+                  >
+                    Generate New Outfit
+                  </button>
+                  <div
+                    id="weatherAdvice"
+                    class="mt-4 p-3 bg-light rounded d-none"
+                  >
+                    <small class="text-muted uppercase fw-bold"
+                      >Weather Tip</small
+                    >
+                    <p class="mb-0" id="weatherAdviceText"></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div class="tab-pane fade" id="analytics" role="tabpanel">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="card mb-4">
+                <div class="card-body">
+                  <h5 class="card-title">Wardrobe Composition</h5>
+                  <canvas id="categoryChart" height="300"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card mb-4">
+                <div class="card-body">
+                  <h5 class="card-title">Dominant Colors</h5>
+                  <canvas id="colorChart" height="300"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card border-top border-4 border-warning">
+            <div class="card-body">
+              <div class="d-flex align-items-center mb-3">
+                <i class="fas fa-lightbulb text-warning fa-2x me-3"></i>
+                <h5 class="mb-0">Wardrobe Insights</h5>
+              </div>
+              <div id="insights">
+                <p class="text-muted">Analyzing your style patterns...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ML Dashboard Tab -->
+        <div class="tab-pane fade" id="mldashboard" role="tabpanel">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="card mb-4 border-top border-4 border-primary">
+                <div class="card-body">
+                  <h5 class="card-title text-primary"><i class="fas fa-brain me-2"></i>On-Device ML Model</h5>
+                  <p class="text-muted small mt-2">
+                    WardrobeWizard trains its custom classifier on your corrections. Every time you correct category or color predictions, that data is logged for reinforcement training.
+                  </p>
+                  <hr class="border-secondary" />
+                  <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Total Reviews Logged</span>
+                    <strong id="mlTotalFeedbacks">0</strong>
+                  </div>
+                  <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Model Average Rating</span>
+                    <strong id="mlAvgRating">5.0 / 5.0</strong>
+                  </div>
+                  <div class="d-flex justify-content-between mb-4">
+                    <span class="text-muted">Pending Training Images</span>
+                    <strong id="mlPendingSamples">0</strong>
+                  </div>
+                  <button class="btn btn-primary w-100 btn-lg" onclick="triggerModelRetraining()" id="btnRetrainModel">
+                    <i class="fas fa-sync-alt me-2"></i> Train Model Now
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-8">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title mb-4"><i class="fas fa-history me-2"></i>Incremental Learning Logs</h5>
+                  <div id="mlTrainingStatus" class="alert alert-info d-none">
+                    <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                    <span id="mlTrainingStatusText">Training classifier...</span>
+                  </div>
+                  <div id="mlFeedbackHistoryList" style="max-height: 400px; overflow-y: auto;">
+                    <p class="text-muted">No corrections logged yet. Classify new clothes and rate predictions to train the model.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Item Modal -->
+    <div class="modal fade" id="addItemModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title">Confirm AI Classification</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body p-4">
+            <div class="row">
+              <div class="col-md-5">
+                <img
+                  id="imagePreview"
+                  src=""
+                  class="img-fluid rounded shadow-sm mb-3"
+                />
+              </div>
+              <div class="col-md-7">
+                <form id="addItemForm">
+                  <div class="mb-3">
+                    <label class="form-label">Name</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="itemName"
+                      required
+                    />
+                  </div>
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Category</label>
+                      <select class="form-select" id="itemCategory">
+                        <option value="shirt">Shirt</option>
+                        <option value="t-shirt">T-Shirt</option>
+                        <option value="pants">Pants</option>
+                        <option value="jeans">Jeans</option>
+                        <option value="shoes">Shoes</option>
+                        <option value="jacket">Jacket</option>
+                        <option value="dress">Dress</option>
+                        <option value="accessory">Accessory</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Style</label>
+                      <select class="form-select" id="itemStyle">
+                        <option value="casual">Casual</option>
+                        <option value="formal">Formal</option>
+                        <option value="athletic">Athletic</option>
+                        <option value="business">Business</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label d-block">Color</label>
+                    <input
+                      type="color"
+                      class="form-control form-control-color w-100"
+                      id="itemColor"
+                      value="#000000"
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Pattern</label>
+                    <select class="form-select" id="itemPattern">
+                      <option value="solid">Solid</option>
+                      <option value="patterned">Patterned</option>
+                      <option value="striped">Striped</option>
+                      <option value="floral">Floral</option>
+                    </select>
+                  </div>
+                  
+                  <!-- Feedback Block inside Add Item Modal -->
+                  <div class="mt-4 pt-3 border-top border-secondary">
+                    <h6 class="mb-2 text-warning"><i class="fas fa-star me-2"></i>Rate AI Classification Accuracy</h6>
+                    <div class="d-flex gap-2 mb-2 fs-4 text-warning" id="feedbackStars">
+                      <span class="star-btn" style="cursor: pointer;" onclick="setFeedbackRating(1)"><i class="far fa-star"></i></span>
+                      <span class="star-btn" style="cursor: pointer;" onclick="setFeedbackRating(2)"><i class="far fa-star"></i></span>
+                      <span class="star-btn" style="cursor: pointer;" onclick="setFeedbackRating(3)"><i class="far fa-star"></i></span>
+                      <span class="star-btn" style="cursor: pointer;" onclick="setFeedbackRating(4)"><i class="far fa-star"></i></span>
+                      <span class="star-btn" style="cursor: pointer;" onclick="setFeedbackRating(5)"><i class="far fa-star"></i></span>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label small text-muted">Feedback / Comments (Trains ML Model internally)</label>
+                      <textarea class="form-control form-control-sm" id="feedbackComment" rows="2" placeholder="Was categorization correct? If not, change the selections above and let us know!"></textarea>
+                    </div>
+                    <input type="hidden" id="feedbackImagePath" />
+                    <input type="hidden" id="feedbackPredictedCategory" />
+                    <input type="hidden" id="feedbackPredictedColor" />
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              data-bs-dismiss="modal"
+            >
+              Retake Photo
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary px-4"
+              onclick="saveItem()"
+            >
+              Save to Closet
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Webcam Capture Modal -->
+    <div class="modal fade" id="webcamModal" tabindex="-1">
+      <div class="modal-dialog modal-md">
+        <div class="modal-content border-0">
+          <div class="modal-header bg-dark text-white border-0">
+            <h5 class="modal-title"><i class="fas fa-camera me-2"></i>Webcam Camera</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              onclick="stopWebcam()"
+            ></button>
+          </div>
+          <div class="modal-body text-center p-0 position-relative" style="background: #000; overflow: hidden; height: 350px;">
+            <video id="webcamVideo" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+            <div style="position: absolute; top: 10%; left: 10%; right: 10%; bottom: 10%; border: 2px dashed rgba(255,255,255,0.4); border-radius: 12px; pointer-events: none;">
+              <span class="text-white-50 small" style="position: absolute; bottom: 8px; left: 0; right: 0; text-align: center;">Align clothing item here</span>
+            </div>
+          </div>
+          <div class="modal-footer bg-dark border-0 d-flex justify-content-between">
+            <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal" onclick="stopWebcam()">Cancel</button>
+            <button type="button" class="btn btn-primary px-4" onclick="captureWebcamPhoto()"><i class="fas fa-camera-retro me-2"></i>Capture Photo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Auth Modal (Login / Register) -->
+    <div class="modal fade" id="authModal" tabindex="-1">
+      <div class="modal-dialog modal-md">
+        <div class="modal-content border-0 bg-dark">
+          <div class="modal-header bg-primary text-white border-0">
+            <h5 class="modal-title"><i class="fas fa-user-shield me-2"></i>Sign In / Register</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-4">
+            <ul class="nav nav-pills mb-3 d-flex justify-content-around" id="authTabs" role="tablist">
+              <li class="nav-item w-50 text-center" role="presentation">
+                <button class="nav-link active w-100" id="login-tab-btn" data-bs-toggle="pill" data-bs-target="#login-panel" type="button">Login</button>
+              </li>
+              <li class="nav-item w-50 text-center" role="presentation">
+                <button class="nav-link w-100" id="register-tab-btn" data-bs-toggle="pill" data-bs-target="#register-panel" type="button">Register</button>
+              </li>
+            </ul>
+            
+            <div class="tab-content mt-3">
+              <div class="tab-pane fade show active" id="login-panel" role="tabpanel">
+                <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+                  <div class="mb-3">
+                    <label class="form-label text-light">Username or Email</label>
+                    <input type="text" class="form-control bg-dark text-white" id="loginUsername" placeholder="Enter username or email" required />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label text-light">Password</label>
+                    <input type="password" class="form-control bg-dark text-white" id="loginPassword" placeholder="••••••••" required />
+                  </div>
+                  <button type="submit" class="btn btn-primary w-100 mt-2">Sign In</button>
+                </form>
+              </div>
+              
+              <div class="tab-pane fade" id="register-panel" role="tabpanel">
+                <form id="registerForm" onsubmit="handleRegisterSubmit(event)">
+                  <div class="mb-3">
+                    <label class="form-label text-light">Username</label>
+                    <input type="text" class="form-control bg-dark text-white" id="registerUsername" placeholder="e.g. stylewizard" required />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label text-light">Email</label>
+                    <input type="email" class="form-control bg-dark text-white" id="registerEmail" placeholder="e.g. user@example.com" required />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label text-light">Password</label>
+                    <input type="password" class="form-control bg-dark text-white" id="registerPassword" placeholder="••••••••" required />
+                  </div>
+                  <button type="submit" class="btn btn-primary w-100 mt-2">Create Account</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UI Overlay for loading -->
+    <div
+      id="loadingOverlay"
+      class="position-fixed top-0 start-0 w-100 h-100 bg-white bg-opacity-75 d-none z-index-modal"
+      style="
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1060;
+      "
+    >
+      <div class="text-center">
+        <div class="spinner-border text-primary mb-3" role="status"></div>
+        <h5 id="loadingMessage">Processing...</h5>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('Service Worker registered!'))
+            .catch(err => console.log('Service Worker registration failed:', err));
+        });
+      }
+    </script>
+  </body>
+</html>
